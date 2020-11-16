@@ -100,32 +100,53 @@ def degree(n, g, vertex, player):
 
 #scoring method for minimax evaluation
 #human player is expected to decrease the score for AI and AI will want to choose best possible move
-def minmaxEvaluation(n,g,s, t):
+def minmaxEvaluation(n,g,s, t, player):
     score = 0
-    for i in range(n):
-        if(i!=s and i!=t):
-            if(g[s,i]==2 and g[i, t]==2):
-                score-=20
-            if(g[s,i]==1 and g[i, t]==1):
-                score-=2
-            if((g[s,i]==2 and g[i, t]==0) or (g[s,i]==0 and g[i, t]==2)):
-                score-=1
-            if((g[s,i]==1 and g[i, t]==0) or (g[s,i]==0 and g[i, t]==1)):
-                score+=1
-            if((g[s,i]==2 and g[i, t]==1) or (g[s,i]==1 and g[i, t]==2)):
-                score+=2
-            if(g[s,i]==0 and g[i, t]==0):
-                score+=3
-    return score
+    # for action in actions:
+    #     s = action[0]
+    #     t = action[1]
+    #     score = 0
+    if player==2:
+        for i in range(n):
+            if(i!=s and i!=t):
+                if(g[s,i]==2 and g[i, t]==2):
+                    score-=20
+                if(g[s,i]==1 and g[i, t]==1):
+                    score-=2
+                if((g[s,i]==2 and g[i, t]==0) or (g[s,i]==0 and g[i, t]==2)):
+                    score-=1
+                if((g[s,i]==1 and g[i, t]==0) or (g[s,i]==0 and g[i, t]==1)):
+                    score+=1
+                if((g[s,i]==2 and g[i, t]==1) or (g[s,i]==1 and g[i, t]==2)):
+                    score+=2
+                if(g[s,i]==0 and g[i, t]==0):
+                    score+=3
+        return score
+    else:
+        for i in range(n):
+            if(i!=s and i!=t):
+                if(g[s,i]==1 and g[i, t]==1):
+                    score-=20
+                if(g[s,i]==2 and g[i, t]==2):
+                    score-=2
+                if((g[s,i]==1 and g[i, t]==0) or (g[s,i]==0 and g[i, t]==1)):
+                    score-=1
+                if((g[s,i]==2 and g[i, t]==0) or (g[s,i]==0 and g[i, t]==2)):
+                    score+=1
+                if((g[s,i]==1 and g[i, t]==2) or (g[s,i]==2 and g[i, t]==1)):
+                    score+=2
+                if(g[s,i]==0 and g[i, t]==0):
+                    score+=3
+        return score
 
-def minimax(n, g, maxDepth, isPlayerMaximizer, alpha, beta, countVisited, s, t, actions):
+def minimax(n, g, maxDepth, isPlayerMaximizer, alpha, beta, countVisited, s, t, actions, player):
     if isPlayerMaximizer:
         player = 2
     else:
         player = 1
     completeGraph = n*(n-1)/2
     if(maxDepth==0 or completeGraph < countVisited or checkTriangle(n, g, s, t, player)):
-        return minmaxEvaluation(n, g, s, t)
+        return minmaxEvaluation(n, g, s, t,player)
 
     if isPlayerMaximizer:
         maxValue = -1000000
@@ -136,7 +157,7 @@ def minimax(n, g, maxDepth, isPlayerMaximizer, alpha, beta, countVisited, s, t, 
             g[t,s] = 2
             actions.remove((s,t))
             actions.remove((t,s))
-            evaluation = minimax(n,g,maxDepth-1,False, alpha, beta, countVisited+1, s, t, actions)
+            evaluation = minimax(n,g,maxDepth-1,False, alpha, beta, countVisited+1, s, t, actions,player)
             g[s,t] = 0
             g[t,s] = 0
             actions.add((s,t))
@@ -156,7 +177,7 @@ def minimax(n, g, maxDepth, isPlayerMaximizer, alpha, beta, countVisited, s, t, 
             g[t,s] = 1
             actions.remove((s,t))
             actions.remove((t,s))
-            evaluation = minimax(n,g,maxDepth-1,True, alpha, beta, countVisited+1, s, t, actions)
+            evaluation = minimax(n,g,maxDepth-1,True, alpha, beta, countVisited+1, s, t, actions,player)
             g[s,t] = 0
             g[t,s] = 0
             actions.add((s,t))
@@ -168,7 +189,7 @@ def minimax(n, g, maxDepth, isPlayerMaximizer, alpha, beta, countVisited, s, t, 
         return minValue
 
 
-def chooseMove(n, g, actions, countVisited):
+def chooseMove(n, g, actions, countVisited, player):
     moveScoreDict =  {}
 
     for action in actions:
@@ -178,18 +199,35 @@ def chooseMove(n, g, actions, countVisited):
         g[j,i] = 2
         actions.remove((i,j))
         actions.remove((j,i))
-        val = minimax(n, g, 19, True, 0,0,countVisited+1, i, j,actions)
+        val = minimax(n, g, 19, True, 0,0,countVisited+1, i, j,actions, player)
         g[i,j] = 0
         g[j,i] = 0
         actions.add((i,j))
         actions.add((j,i))
         moveScoreDict[action] = val
 
-    best = max(moveScoreDict, key=moveScoreDict.get)
-    return best
+    aiBest = max(moveScoreDict, key=moveScoreDict.get)
+    return aiBest
 
-def randomAI(g, actions):
-    return random.choices(list(actions), k = 1)[0]
+def choosePlayerMove(n, g, actions, countVisited, player):
+    moveScoreDict =  {}
+
+    for action in actions:
+        i = action[0]
+        j = action[1]
+        g[i,j] = 1
+        g[j,i] = 1
+        actions.remove((i,j))
+        actions.remove((j,i))
+        val = minimax(n, g, 19, False, 0,0,countVisited+1, i, j,actions, player)
+        g[i,j] = 0
+        g[j,i] = 0
+        actions.add((i,j))
+        actions.add((j,i))
+        moveScoreDict[action] = val
+
+    playerBest = max(moveScoreDict, key=moveScoreDict.get)
+    return playerBest
 
 def plottingHistogram(gameSizeArray):
     # libraries
@@ -214,7 +252,7 @@ def plottingHistogram(gameSizeArray):
     plt.bar(r3, bars3, color='#ffc13b', width=barWidth, edgecolor='white', label='Tie')
 
     # Add xticks on the middle of the group bars
-    plt.title('Minimax AI Vs Randomized Human Input')
+    plt.title('Minimax AI Vs Best Human Input')
     plt.ylabel('Winning Frequency', fontweight='bold')
     plt.xlabel('Board Size', fontweight='bold')
     plt.xticks([r + barWidth for r in range(len(bars1))], ['3', '4', '5', '6', '7', '8', '9'])
@@ -255,15 +293,15 @@ if __name__ == '__main__':
         #count: keeps track of maximum number of edges reached
         count = 1
         print("\n")
-        temp = n-3
+        temp = n - 3
         while (count <= completeGraph): #Stopping condition: check if number of possible edges exhausted
             #player_move_s: stores the source vertex of the player
             #player_move_t: stores the target vertex of the player
             if player==1:
                 # player_move_s, player_move_t = getInput(g, player)
-                player_move_s, player_move_t = randomAI(g, actions)
+                player_move_s, player_move_t = choosePlayerMove(n, g, actions, count,player)
             else:
-                (player_move_s, player_move_t) = chooseMove(n, g, actions, count)
+                (player_move_s, player_move_t) = chooseMove(n, g, actions, count,player)
                 print(player_move_s, " ", player_move_t)
 
 
