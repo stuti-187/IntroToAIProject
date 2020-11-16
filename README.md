@@ -4,7 +4,8 @@ Built on Python version 3.7.4
 
 
 Latest version is under Phase-2 directory
-Under AnalysisAutomatedScripts you can find the automated scripts used to analyse the AI's performance over a range of board size that simulates 100 games.
+
+Under Phase-2/AnalysisAutomatedScripts you can find the automated scripts used to analyse the AI's performance over a range of board size that simulates 100 games.
 
 
 **Steps to Run**:
